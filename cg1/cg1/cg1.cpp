@@ -24,7 +24,7 @@ int g_w = 700, g_h =700;
 
 unsigned char g_prevKey;
 
-int g_recursionMax = 8, g_recursionCurrent = 4;
+int g_recursionMax = 8, g_recursionCurrent = 8;
 double g_jfa = -0.82, g_jfb = -0.17; //Julia-Fatou a and b values.
 
 //----------------Utility functions----------------------
@@ -348,11 +348,39 @@ void Display3() {
     fractalSquarePattern(t, 1.9, g_recursionCurrent);
 }
 
+void fractalHexLine(Turtle t, float distance, int recursionsLeft = 1, int orientation = 1)
+{
+	if (recursionsLeft > 0)
+	{
+		--recursionsLeft;
+        distance = distance / 2;
+
+		t.rotate(orientation * pi / 3);
+		fractalHexLine(t, distance, recursionsLeft, -orientation);
+		t.move(distance);
+
+		t.rotate(orientation * -pi / 3);
+		fractalHexLine(t, distance, recursionsLeft, orientation);
+		t.move(distance);
+
+		t.rotate(orientation * -pi / 3);
+		fractalHexLine(t, distance, recursionsLeft, -orientation);
+		t.move(distance);
+
+		t.rotate(orientation * pi / 3);
+	}
+	else {
+		t.draw(distance);
+	}
+}
 
 void Display4() {
     //Draw the triangle-like hex line fractal here.
     glColor3f(1, 0, 0);
     drawRecursionLevel();
+
+    Turtle t(-0.95, -0.95);
+    fractalHexLine(t, 1.9, g_recursionCurrent, 1);
 
 }
 
