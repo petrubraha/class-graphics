@@ -127,6 +127,16 @@ void Display2() {
     glEnd();
 }
 
+double getYForDisplay3(double x) {
+    // Avoid comparing it directly with 0. It's more robust to handle cases of 0.0000001 like so.
+    if (fabs(x) < 1e-9) {
+        return 1.0;
+    }
+
+    double dx = fabs(x - round(x));
+    return dx / x;
+}
+ 
 /* 1)
    \( f(x) =
      \left\{
@@ -138,6 +148,14 @@ void Display2() {
    \)
  */
 void Display3() {
+    double xmax = 100;
+
+    glBegin(GL_LINE_STRIP);
+    for (double x = 0; x < xmax; x += step) {
+        double y = getYForDisplay3(x);
+        glVertex2d(x / xmax, y);
+    }
+    glEnd();
 }
 
 //3) function arguments e.g.: f(a, b, t), where a and b are function family parameters, and the is the driving variables.
