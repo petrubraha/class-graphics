@@ -17,7 +17,7 @@ double pi = halfCircle; // TAU / 2 = PI
 double step = 0.05;
 
 
-int defaultW = 1000, defaultH = 1000;
+int defaultW = 700, defaultH = 700;
 
 unsigned char prevKey;
 
@@ -150,6 +150,7 @@ double getYForDisplay3(double x) {
 void Display3() {
     double xmax = 100;
 
+    glColor3f(1, 0.1, 0.1);
     glBegin(GL_LINE_STRIP);
     for (double x = 0; x < xmax; x += step) {
         double y = getYForDisplay3(x);
@@ -167,6 +168,7 @@ void plot(
   double step = 0.01,
   double scaleX = 1, double scaleY = 1,
   GLint primitive = GL_LINE_STRIP) {
+    glColor3f(1, 0.1, 0.1);
     glBegin(primitive);
     for (double t = intervalStart; t <= intervalEnd; t += step) {
         double x = xFunc(a, b, t) * scaleX;
@@ -307,7 +309,64 @@ y = \frac{a \cdot tg(t)}{4 \cdot cos^2(t) - 3}, \;
 t \in (-\pi/2, \pi/2) \setminus \{ -\pi/6, \pi/6 \} \) .
 For this plot, \(a = 0.2\) .
  */
+double xTrisectrix(double a, double b, double t) {
+    return a / (4 * pow(cos(t), 2) - 3);
+    return a * (3 - 4 * sin(t) * sin(t));
+}
+
+double yTrisectrix(double a, double b, double t) {
+    return a * tan(t) / (4 * pow(cos(t), 2) - 3);
+    return a * (3 - 4 * sin(t) * sin(t)) * tan(t);
+}
+
+void plotTriangles(
+  double a, double b,
+  double intervalStart, double intervalEnd,
+  double step = 0.01,
+  double scaleX = 1, double scaleY = -1) {
+    glBegin(GL_TRIANGLES);
+    for (double t = intervalStart; t < intervalEnd; t += 2 * step) {
+        // The fixed top-left corner.
+        glVertex2d(-1.0, 1.0);
+
+        double x1 = xTrisectrix(a, USELESS, t);
+        double y1 = yTrisectrix(a, USELESS, t);
+        glVertex2d(x1 * scaleX, y1 * scaleY);
+
+        double x2 = xTrisectrix(a, USELESS, t + step);
+        double y2 = yTrisectrix(a, USELESS, t + step);
+        glVertex2d(x2 * scaleX, y2 * scaleY);
+    }
+    glEnd();
+}
+
+/*
+  MATHEMATICAL EXPLANATIONS OF THE MANIPULATION OF THE TRISECTRIX PLOT:
+
+  1. BRANCH SELECTION: The Trisectrix of Longchamps defined by
+     x = a / (4cos^2(t) - 3) contains a singularity at t = pi/6.
+     By selecting the domain (pi/6, pi/2), we isolate the upper-left
+     component which approaches infinity as t -> pi/6.
+
+  2. COORDINATE TRANSFORMATION: The mathematical branch naturally
+     resides in the lower-left quadrant (-x, -y). By applying a
+     vertical scale of -1 to y, we reflect the curve over the x-axis
+     to place it in the upper-left quadrant (x < 0, y > 0).
+
+  3. TRIANGULATION ALGORITHM: The visual "shutter" effect is achieved
+     through a Triangle Fan-like approach. We define a static anchor
+     point at the window corner (-1, 1). For every interval [t, t + step],
+     a triangle is rendered between the anchor and the two consecutive
+     points on the Trisectrix branch. This fills the area between
+     the curve and the corner.
+*/
 void Display10() {
+    double a = 0.2;
+    double t_start = pi / 6 + 0.01;
+    double t_end = pi / 2 - 0.01;
+    // t_end - step is used to avoid drawing the last triangle - it breaks the drawing frame.
+    plotTriangles(a, USELESS, t_start, t_end - step, step, 1, -1);
+    plot(xTrisectrix, yTrisectrix, a, USELESS, t_start, t_end, step, 1, -1);
 }
 
 void init(void) {
