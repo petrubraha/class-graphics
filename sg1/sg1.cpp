@@ -296,7 +296,7 @@ double ySineFlower(double a, double b, double t) {
 }
 
 void Display9() {
-    plot(xSineFlower, ySineFlower, 10.0, 0.0, 0.0, pi * 2, step / 10, 0.9, 0.9);
+    plot(xSineFlower, ySineFlower, 10.0, USELESS, 0.0, pi * 2, step / 10, 0.9, 0.9);
 }
 
 /*
