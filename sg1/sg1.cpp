@@ -253,7 +253,31 @@ void Display7() {
  \( r = a \cdot e^{1+t}, \; t \in (0, \infty) \) .
  For this plot, \(a = 0.02\) .
 */
+
+/**
+ * Use this constant to mark a parameter as useless.
+ * Why to keep a useless parameter?
+ * * to allow their functions to be used with the abstract plotting method
+ * * to be consistent with all the other function declaration
+ */
+constexpr double USELESS = 0;
+
+double xLogarithmicSpiral(double a, double b, double t) {
+    double r = a * exp(1.0 + t);
+    return r * cos(t);
+}
+
+double yLogarithmicSpiral(double a, double b, double t) {
+    double r = a * exp(1.0 + t);
+    return r * sin(t);
+}
+
+/**
+ * "You don't need to get precisely this plot. The spiral may extend in whichever direction."
+ * So it should be good enough.
+ */
 void Display8() {
+    plot(xLogarithmicSpiral, yLogarithmicSpiral, 0.02, USELESS, 0, 5, step, 0.1, 0.1);
 }
 
 /*
@@ -261,7 +285,18 @@ void Display8() {
   \( r = sin(a \cdot t), \; t \in (0, \infty)  \) .
   For this plot, \(a = 10\), and the number 'petals' is \( 2 \cdot a \). Think about why.
 */
+double xSineFlower(double a, double b, double t) {
+    double r = sin(a * t);
+    return r * cos(t);
+}
+
+double ySineFlower(double a, double b, double t) {
+    double r = sin(a * t);
+    return r * sin(t);
+}
+
 void Display9() {
+    plot(xSineFlower, ySineFlower, 10.0, 0.0, 0.0, pi * 2, step / 10, 0.9, 0.9);
 }
 
 /*
