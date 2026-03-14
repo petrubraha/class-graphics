@@ -158,15 +158,39 @@ void Display3() {
     glEnd();
 }
 
-//3) function arguments e.g.: f(a, b, t), where a and b are function family parameters, and the is the driving variables.
-void plot(double (*x)(double, double, double), double (*y)(double, double, double), double a, double b, double intervalStart, double intervalEnd, double step = 0.01, double scaleX = 1, double scaleY = 1, GLint primitive = GL_LINE_STRIP);
+//3) function arguments e.g.: f(a, b, t), where a and b are function family parameters, and the t is the driving variables.
+void plot(
+  double (*xFunc)(double, double, double),
+  double (*yFunc)(double, double, double),
+  double a, double b,
+  double intervalStart, double intervalEnd,
+  double step = 0.01,
+  double scaleX = 1, double scaleY = 1,
+  GLint primitive = GL_LINE_STRIP) {
+    glBegin(primitive);
+    for (double t = intervalStart; t <= intervalEnd; t += step) {
+        double x = xFunc(a, b, t) * scaleX;
+        double y = yFunc(a, b, t) * scaleY;
+        glVertex2d(x, y);
+    }
+    glEnd();
+}
 
 /*
   2) Circle Concoid (Limaçon, Pascal's Snail):
   \(x = 2 \cdot (a \cdot cos(t) + b) \cdot cos(t), \; y = 2 \cdot (a \cdot cos(t) + b) \cdot sin(t), \; t \in (-\pi, \pi)\) .
   For this plot, \(a = 0.3, \; b = 0.2\) .
 */
+double xLimacon(double a, double b, double t) {
+    return 2 * (a * cos(t) + b) * cos(t);
+}
+
+double yLimacon(double a, double b, double t) {
+    return 2 * (a * cos(t) + b) * sin(t);
+}
+
 void Display4() {
+    plot(xLimacon, yLimacon, 0.3, 0.2, -pi, pi);
 }
 
 /*
@@ -174,7 +198,16 @@ void Display4() {
   \(x = a \cdot t - b \cdot sin(t), \; y = a - b \cdot cos(t), \; t \in \mathbb{R} \) .
   For this plot, \(a = 0.1, \; b = 0.2\) .
 */
+double xCycloid(double a, double b, double t) {
+    return a * t - b * sin(t);
+}
+
+double yCycloid(double a, double b, double t) {
+    return a - b * cos(t);
+}
+
 void Display5() {
+    plot(xCycloid, yCycloid, 0.1, 0.2, -10, 10, step, 0.7, 1.0);
 }
 
 /*
@@ -184,7 +217,16 @@ void Display5() {
   \( t \in \left[ 0, 2\pi \right] \) .
   For this plot, \(a = 0.1, \; b = 0.3\) .
 */
+double xEpicycloid(double a, double b, double t) {
+    return (a + b) * cos((b / a) * t) - b * cos(t + (b / a) * t);
+}
+
+double yEpicycloid(double a, double b, double t) {
+    return (a + b) * sin((b / a) * t) - b * sin(t + (b / a) * t);
+}
+
 void Display6() {
+    plot(xEpicycloid, yEpicycloid, 0.1, 0.3, 0, 2 * pi);
 }
 
 /*
@@ -194,7 +236,16 @@ void Display6() {
   \( t \in \left[ 0, 2\pi \right] \) .
   For this plot, \(a = 0.1, \; b = 0.3\) .
  */
+double xHypocycloid(double a, double b, double t) {
+    return (a - b) * cos((b / a) * t) - b * cos(t - (b / a) * t);
+}
+
+double yHypocycloid(double a, double b, double t) {
+    return (a - b) * sin((b / a) * t) - b * sin(t - (b / a) * t);
+}
+
 void Display7() {
+    plot(xHypocycloid, yHypocycloid, 0.1, 0.3, 0, 2 * pi);
 }
 
 /*
