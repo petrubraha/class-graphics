@@ -1,7 +1,6 @@
 #include "glut.h"
 #include <cmath>
 #include <numbers>
-#include <vector>
 
 struct Point
 {
@@ -14,6 +13,10 @@ class RasterGrid
 private:
     static constexpr int gridExtent = 30;
     static constexpr float pointRadius = 0.35f;
+    static constexpr int countVertices = 12;
+    static constexpr Point polygonVertices[countVertices] =
+        {{15, 29}, {22, 27}, {27, 22}, {29, 15}, {27, 8}, {22, 3}, {15, 1}, {8, 3}, {3, 8}, {1, 15}, {3, 22}, {8, 27}};
+
     int activeDisplayMode = 1;
     bool isCircleFilled = false;
 
@@ -33,24 +36,15 @@ private:
         glEnd();
     }
 
-    // Simulates a 3-pixel brush stroke for thicker rasterized lines.
-    void drawThickPixel(int xCoordinate, int yCoordinate, bool isShallowGradient) const
+    void drawShallowThickPixel(int xCoordinate, int yCoordinate) const
     {
         drawDisc(xCoordinate, yCoordinate, 0.0f, 0.0f, 0.0f);
-        if (isShallowGradient)
-        {
-            drawDisc(xCoordinate, yCoordinate + 1, 0.0f, 0.0f, 0.0f);
-            drawDisc(xCoordinate, yCoordinate - 1, 0.0f, 0.0f, 0.0f);
-        }
-        else
-        {
-            drawDisc(xCoordinate + 1, yCoordinate, 0.0f, 0.0f, 0.0f);
-            drawDisc(xCoordinate - 1, yCoordinate, 0.0f, 0.0f, 0.0f);
-        }
+        drawDisc(xCoordinate, yCoordinate + 1, 0.0f, 0.0f, 0.0f);
+        drawDisc(xCoordinate, yCoordinate - 1, 0.0f, 0.0f, 0.0f);
     }
 
     // Evaluates Bresenham's algorithm for lines with a slope magnitude less than or equal to 1.
-    void drawLineShallow(int startX, int startY, int endX, int endY) const
+    void drawShallowLine(int startX, int startY, int endX, int endY) const
     {
         int deltaX = std::abs(endX - startX), deltaY = std::abs(endY - startY);
         int stepX = (startX < endX) ? 1 : -1, stepY = (startY < endY) ? 1 : -1;
@@ -59,7 +53,7 @@ private:
         int currentX = startX, currentY = startY;
         while (currentX != endX)
         {
-            drawThickPixel(currentX, currentY, true);
+            drawShallowThickPixel(currentX, currentY);
             currentX += stepX;
             if (decisionVariable < 0)
                 decisionVariable += deltaEast;
@@ -69,11 +63,18 @@ private:
                 decisionVariable += deltaNorthEast;
             }
         }
-        drawThickPixel(currentX, currentY, true);
+        drawShallowThickPixel(currentX, currentY);
+    }
+
+    void drawSteepThickPixel(int xCoordinate, int yCoordinate) const
+    {
+        drawDisc(xCoordinate, yCoordinate, 0.0f, 0.0f, 0.0f);
+        drawDisc(xCoordinate + 1, yCoordinate, 0.0f, 0.0f, 0.0f);
+        drawDisc(xCoordinate - 1, yCoordinate, 0.0f, 0.0f, 0.0f);
     }
 
     // Evaluates Bresenham's algorithm for lines with a slope magnitude greater than 1.
-    void drawLineSteep(int startX, int startY, int endX, int endY) const
+    void drawSteepLine(int startX, int startY, int endX, int endY) const
     {
         int deltaX = std::abs(endX - startX), deltaY = std::abs(endY - startY);
         int stepX = (startX < endX) ? 1 : -1, stepY = (startY < endY) ? 1 : -1;
@@ -82,7 +83,7 @@ private:
         int currentX = startX, currentY = startY;
         while (currentY != endY)
         {
-            drawThickPixel(currentX, currentY, false);
+            drawSteepThickPixel(currentX, currentY);
             currentY += stepY;
             if (decisionVariable < 0)
                 decisionVariable += deltaNorth;
@@ -92,7 +93,7 @@ private:
                 decisionVariable += deltaNorthEast;
             }
         }
-        drawThickPixel(currentX, currentY, false);
+        drawSteepThickPixel(currentX, currentY);
     }
 
     // Routes the coordinate rendering to the appropriate steep or shallow Bresenham calculation.
@@ -104,9 +105,9 @@ private:
         glVertex2i(endX, endY);
         glEnd();
         if (std::abs(endY - startY) <= std::abs(endX - startX))
-            drawLineShallow(startX, startY, endX, endY);
+            drawShallowLine(startX, startY, endX, endY);
         else
-            drawLineSteep(startX, startY, endX, endY);
+            drawSteepLine(startX, startY, endX, endY);
     }
 
     // Handles rendering of the inner fill pixels if the circle fill mode is toggled.
@@ -115,9 +116,7 @@ private:
         if (!isCircleFilled)
             return;
         for (int xCoordinate = startX; xCoordinate <= endX; ++xCoordinate)
-        {
             drawDisc(xCoordinate, yCoordinate, 0.0f, 0.0f, 0.0f);
-        }
     }
 
     // Plots the 8 symmetrical sectors for the midpoint circle algorithm.
@@ -139,21 +138,19 @@ private:
         drawDisc(centerX - offsetY, centerY - offsetX, 0.0f, 0.0f, 0.0f);
     }
 
-    // Main display of a thick rasterized.
+    // ! Main display of a thick rasterized.
     void drawThickCircle() const
     {
-        const std::vector<Point> polygonVertices =
-            {{15, 29}, {22, 27}, {27, 22}, {29, 15}, {27, 8}, {22, 3}, {15, 1}, {8, 3}, {3, 8}, {1, 15}, {3, 22}, {8, 27}};
-        for (size_t index = 0; index < polygonVertices.size(); ++index)
+        for (size_t index = 0; index < countVertices; ++index)
         {
             drawBresenhamLine(
                 polygonVertices[index].x, polygonVertices[index].y,
-                polygonVertices[(index + 1) % polygonVertices.size()].x,
-                polygonVertices[(index + 1) % polygonVertices.size()].y);
+                polygonVertices[(index + 1) % countVertices].x,
+                polygonVertices[(index + 1) % countVertices].y);
         }
     }
 
-    // Main display of a rasterized circle using integer-only midpoint calculations.
+    // ! Main display of a rasterized circle using integer-only midpoint calculations.
     void drawMidpointCircle(int centerX, int centerY, int radius) const
     {
         glColor3f(0.0f, 0.0f, 1.0f);
